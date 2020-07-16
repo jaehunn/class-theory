@@ -746,7 +746,118 @@
 
 // 9. getter / setter
 {
+  // getter: accessor
+  // setter: mutator
 
+  // (1) getter/setter
+  {
+    var obj = {
+      myName: '',
+
+      set name(name) {
+        this.myname = name;
+      },
+
+      get name() {
+        return this.myName;
+      },
+    }
+
+    class Student {
+      name: string;
+      birthYear: number; 
+
+      // get, set have not a certain logic
+    }
+
+    let student = new Student;
+
+    // setter
+    student.name = 'happy';
+    student.birthYear = 2017;
+
+    student.name; // happy
+    student.birthYear; // 2017
+
+    // add logic
+    class Student2 {
+      private studentName: string;
+      private studentBirthYear: number;
+
+      get name(): string {
+        return this.studentName;
+      }
+
+      set name(name: string) {
+
+        // ~x = -(x + 1)
+        // x = -1, false
+        // x != -1, true
+        if (!~name.indexOf('happy')) {
+          this.studentName = name;
+        }
+      }
+
+      get birthYear(): number {
+        return this.studentBirthYear;
+      }
+
+      set birthYear(year: number) {
+        if (year <= 2000) this.studentBirthYear = year;
+      }
+    }
+
+    let student2 = new Student2();
+
+    student2.birthYear = 2001; // set, do not assignment
+    student2.birthYear; // get, undefined (private)
+
+    student2.birthYear = 2000; // set, assignment
+    student2.birthYear; // get, 2000 (private)
+
+    student2.name = 'happy'; // set, do not assignment
+    student2.name; // get, undefined (private)
+
+    student2.name = 'lucky' // set, assignment
+    student2.name; // get, lucky (private)
+  }
+
+  // (2) compile, javascript
+  {
+    var Student2 = (function () {
+      function Student2() {}
+
+      Object.defineProperty(Student2.prototype, "name", {
+        get: function () {
+          return this.studentName;
+        },
+
+        set: function (name) {
+          if (!~name.indexOf("happy")) {
+            this.studentName = name;
+          }
+        }, 
+
+        enumerable: true,
+        configurable: true
+      });
+
+      Object.defineProperty(Student2.prototype, "birthYear", {
+        get: function () {
+          return this.studentBirthYear;
+        },
+
+        set: function (year) {
+          if (year <= 2000) this.studentBirthYear = year;
+        },
+
+        enumerable: true,
+        configurable: true
+      });
+
+      return Student2;
+    })();
+  }
 }
 
 // 9. static
