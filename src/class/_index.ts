@@ -448,14 +448,305 @@
 
 // 6. overriding
 {
+  // parent class: overridden class
+  // child class: overriding class (parent method re-declare)
+
+  // (1) overriding 
+  {
+    // parent class
+    class Bird {
+      flight(kmDistance: number = 0) {
+        // ...
+      }
+    }
+  
+    // child class
+    class Eagle extends Bird {
+      // ...
+  
+      // overriding
+      // 1. *method name same
+      // 2. parameter name change
+      // 3. *parameter type same, or sub-type (exception "any" type)
+      // 4. *parameter type count, overriden >= overriding
+      flight(kmDistance2: number) {
+        // ...
+      }
+    }
+  }
+
+  // (2) overriding parameter type
+  {
+    // case 1
+    flight(kmDistance: any = 0); // overriden
+    flight(kmDistance: number = 0); // overriding, any > number
+
+    // case 2
+    flight(kmDistance: number = 0); // overriden
+    flight(kmDistance: any = 0); // overriding, any type enable
+  }
+
+  // (3) parameter count
+  {
+    flight(kmDistance: number = 0, kmSpeed: number = 0); // overriden
+    flight(kmDistance: number = 0); // overriding, less than overriden method parameter count
+  }
+
+  // overloading
+  // 1. method name same
+  // 2. parameter type, count differ
+
+  // (4) overriding method -> overloading
+  {
+    class SingleTypeChecker {
+      constructor() {
+        // ... 
+      }
+
+      typeCheck(value: string): void {
+        typeof value;
+        value; 
+      }
+    }
+
+    class UnionTypeChecker extends SingleTypeChecker {
+      constructor() { super(); }
+
+      // any type constraint -> typeCheck method overriding
+      typeCheck(value: number): void; // overloading
+      typeCheck(value: string): void; // overloading
+      typeCheck(value: any): void { 
+        // type guard
+        if (typeof value === 'number') value;
+        else if (typeof value === 'string') value;
+        else value;
+      }
+    }
+
+    let unionTypeChecker = new UnionTypeChecker();
+
+    unionTypeChecker.typeCheck(123); // 123
+    unionTypeChecker.typeCheck('happy'); // happy
+    unionTypeChecker.typeCheck(true); // error
+    
+    // overload -> union type
+    typeCheck(value: number | string): void {
+      // ...
+    }
+  }
+
+  // (5) interface implementation -> overloading
+  {
+    interface IPoint {
+      getX(x: any): any
+    }
+
+    class Point implements IPoint {
+
+      // parameter x is selection parameter
+      // parameter is union type
+      getX(x?: number | string): any {
+        // type guard
+        if (typeof x === 'number') return x;
+        else if (typeof x === 'string') return x; 
+      }
+    }
+  }
 }
 
-// 7. overloading
+
+// 7. polymorphism
 {
+  // polymorphism
+  // (1) class polymorphism
+  {
+    class Planet {
+      public diameter: number;
+      protected isTransduction: boolean = true; 
+
+      getIsTransduction(): boolean {
+        return this.isTransduction;
+      }
+
+      stopTransduction(): void {
+        this.isTransduction = false; 
+      }
+    }
+
+    class Earth extends Planet {
+      public features: string[] = ['soil', 'water', 'oxyzen'];
+      stopTransduction(): void {
+        this.isTransduction = false;
+      }
+    }
+
+    // parent(Planet) -> variable type, enable to assign child object(new Earth) 
+    // parent method aceess, can't access child(Earch) features
+    // overriding method call as fast as overriden method -> runtime polymorphism
+    let earth: Planet = new Earth(); // 
+
+    earth.diameter = 12656.2;
+
+    earth.diameter; // 12656.2
+    earth.getIsTransduction(); // true
+
+    earth.stopTransduction();
+    earth.getIsTransduction(); // false
+  }
+
+  // (2) abstract class polymorphism
+  {
+    abstract class Train {
+      constructor(protected speed: number) {
+      }
+      
+      // implementation method
+      speedUp(): void {
+        this.speed++; 
+      }
+
+      // abstract method
+      abstract getSpeed(): number;
+    }
+
+    class Ktx extends Train {
+      constructor(protected speed: number) {
+        super(speed); 
+      }
+
+      // override
+      public getSpeed(): number {
+        return this.speed;
+      }
+
+      public speedUpUp(): void {
+        this.speed += 2;
+      }
+    }
+
+    // to Train, upcasting -> polymorphism
+    // can't access Ktx class member(speedUpUp)
+    let ktx: Train = new Ktx(300);
+
+    ktx.getSpeed(); // 300
+
+    ktx.speedUp();
+    ktx.getSpeed(); // 301
+  }
+
+  // (3) interface polymorphism
+  {
+    interface IPerson {
+      height: number;
+      getAlias:() => string;
+      getAge(): number;
+    }
+
+    class PoliceOfficer implements IPerson {
+      height: number;
+
+      getAlias: () => 'happy';
+      getAge(): number {
+        return 10;
+      }
+
+      hasClub() {
+        return true;
+      }
+    }
+
+    // enable to access base on Interface
+    let policeMan: IPerson = new PoliceOfficer();
+
+    // implementation
+    policeMan.getAlias();
+    policeMan.getAge();
+
+    policeMan.hasClub(); // cannot access
+  }
+
+  // (4) parameter polymorphism
+  {
+    class MonitorDisplayTest {
+      // ... 
+
+      // variant type -> type guard
+      // union type -> polymorphism
+      display(data: string | number) {
+        if (typeof data === 'string') {
+          return 'string' + data;
+        } else {
+          return "number" + data;
+        }
+      }
+    }
+
+    let displayTest = new MonitorDisplayTest();
+    displayTest.display('happy'); // string happy
+    displayTest.display(123); // number 123
+
+    // class type
+    class MonitorDisplayTest2 {
+      display1(monitor: Led | Oled) {
+        if (monitor instanceof Led) {
+
+          // type aseertion -> enable to omit
+          let myMonitor: Led = <Led>monitor;
+
+          return myMonitor.getName();
+        } else if (monitor instanceof Oled) {
+          // type aseertion -> enable to omit
+          let myMonitor: Oled = <Oled>monitor;
+
+          return myMonitor.getName();
+        }
+      }
+    }
+
+    displayTest.display(new Led('LED'));
+    displayTest.display(new Oled('OLED'));
+
+    // union, type alias -> add else if (BAD)
+    // (Good) interface
+
+    interface Monitor {
+      getName(): string;
+    }
+
+    // type compatible
+    class Led implements Monitor {
+      constructor(private name: string) {}
+
+      getName(): string {
+        return this.name
+      }
+    }
+
+    // type compatible
+    class Oled implements Monitor {
+      constructor(private name: string) {}
+
+      getName(): string {
+        return this.name
+      }
+    }
+
+    class MonitorDisplayTest3 {
+      // ...
+
+      // do not need to union type and instance guard
+      display(monitor: Monitor) {
+        let myMonitor: Monitor = monitor;
+
+        return myMonitor.getName();
+      }
+    }
+  } 
 }
 
-// 8. polymorphism
+// 9. getter / setter
 {
+
 }
 
 // 9. static
