@@ -862,8 +862,157 @@
 
 // 9. static
 {
+  // access without create instance, memory saving
+
+  // (1) share object, class
+  {
+    class Circle {
+      private static pi: number = 3.14;
+      static circleArea: number = 0;
+  
+      static getArea(radius: number) {
+        this.circleArea = radius * radius * Circle.pi;
+        
+        return this.circleArea;
+      }
+  
+      static set area(pArea: number) {
+        Circle.circleArea = pArea;
+      }
+  
+      get area(): number {
+        return Circle.circleArea;
+      }
+    }
+  
+    Circle.getArea(3); // 28.26
+    Circle.area = 100; // setter
+  
+    let circle = new Circle();
+  
+    circle.area; // 100, share (object, class)
+  }
+
+  // singleton pattern, share only one object
+
+  // (2) singleton - eager initialization: initialize when program working, get to object using static method
+  {
+    class EagerLogger {
+      private static uniqueObject: EagerLogger = new EagerLogger(); // initialization
+      private EagerLogger() {} // prevent to create object
+
+      public static getLogger(): EagerLogger {
+        return this.uniqueObject;
+      }
+
+      public info(message: string) {
+        message; 
+      }
+
+      public warning(message: string) {
+        message; 
+      }
+    }
+
+    // can't enable to use new keyword
+    let eagerLogger: EagerLogger = EagerLogger.getLogger();
+    let eagerLogger2: EagerLogger = EagerLogger.getLogger();
+
+    eagerLogger.info('A'); // A
+    eagerLogger.warning('B'); // B
+    eagerLogger.info(`${eagerLogger === eagerLogger2}`); // true
+  }
+
+  // (3) singleton - lazy initialization, add to exist validation
+  {
+    class LazeLogger {
+      private static uniqueObject: LazeLogger; // do not init, create case
+      private LazeLogge () {}
+
+      public static getLogger(): LazeLogger {
+
+        if (this.uniqueObject == null) {
+          this.uniqueObject = new LazeLogger(); // if empty, init
+        }
+
+        return this.uniqueObject; // exist, return
+      }
+
+      public info(message: string) {
+        message; 
+      }
+
+      public warning(message: string) {
+        message; 
+      }
+    }
+
+    let lazeLogger: LazeLogger = LazeLogger.getLogger();
+    let lazeLogger2: LazeLogger = LazeLogger.getLogger();
+
+    lazeLogger.info('A'); // A
+    lazeLogger.info('A'); // A
+    lazeLogger.info(`${lazeLogger === lazeLogger2}`); // true
+  }
+
+
 }
 
 // 10. readonly modifier
 {
+  // do not same const keyword
+
+  // (1) readonly can use interface, class member
+  {
+    interface ICount {
+      readonly count: number;
+    }
+
+    class TestReadonly implements ICount {
+      readonly count: number
+    }
+  }
+
+  // (2) can use keyword when declare literal object properties 
+  {
+    interface ICount {
+      readonly count: number;
+    }
+
+    class TestReadonly implements ICount {
+      readonly count: number;
+      static readonly count2: number;
+      private readonly count3: number;
+      readonly count4: number = 0;
+
+      getCount() {
+        this.count4 = 0; // can't re-assign
+        readonly count5: number = 0; // can't declare in method
+      }
+    }
+
+    function getCount() {
+      readonly count: number; // can't declare in function
+    }
+
+    let literalObj: { readonly alias: string } = { alias: 'happy' }; // enable
+    literalObj.name = 'happy' // can't assign
+    literalObj = 'test'; // can't assign
+
+    // readonly do not force to initialize, but initialize so can't re-assign
+  }
+
+  // (3) for remove readonly, do type aliasing
+  {
+    let emotion: { readonly name: string } = { name: 'sad' }; // value fixed, readonly
+
+    // remove readonly 
+    function aliasing(pEmotion: { name: string }) {
+      pEmotion.name = 'happy'; // re-assign
+    }
+
+    emotion.name; // sad
+    aliasing(emotion);
+    emotion.name; // happy
+  }
 }
