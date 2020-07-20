@@ -131,5 +131,94 @@
 
 // 5. namespace extension
 {
+    // upper namespace -> lower namespace
+    namespace Animal {
+        export function run() {
+            console.log("Animal runs");
+        }
+
+        Animal.Land.run(); // do not call lower namespace
+    }
+
+    namespace Animal.Land {
+        Animal.run(); // call upper namespace
+
+        export function run() {
+            console.log("Land animal runs");
+        }
+    }
+
+    namespace Animal.Land.Pet {
+        Animal.Land.run(); // call upper namespace
+
+        export function run() {
+            console.log("Pet runs");
+        }
+
+        export class Cat {
+            run() {
+                Animal.Land.Pet.run();
+            }
+        }
+    }
+
+    let cat = new (Animal.Land.Pet).Cat();
+    cat.run(); // Animal runs Land animal runs Pet runs
     
+    // in the above code, if namespace is used as a module
+    export namespace Animal{}
+    export namespace Animal.Land{}
+    export namespace Animal.Land.Pet{}
+
+    // import upper namespace 
+    import { Animal } from './';
+    Animal.run();
+    Animal.Land.run();
+    Animal.Land.Pet.run();
 }
+
+// 6. in browser, call namespace module 
+{
+    // when typescript compiled, use out option
+    // but in browser, compile individually and know without using import keyword
+    
+    // number-validator.ts
+    namespace Validator {
+        export class NumberValidator {
+            isNumber(s: any): boolean {
+                if (typeof s === 'number' || s instanceof Number) return true;
+                else return false;
+            }
+        }
+    }
+
+    // string-validator.ts
+
+    /// <reference path="number-validator.ts"/ >
+    namespace Validator {
+        export class StringValidator {
+            isString(s: any): boolean {
+                if (typeof s ==='string' || s instanceof String) return true;
+                else return false
+            }
+        }
+    }
+
+    let stringValidator = new Validator.StringValidator();
+    let numberValidator = new Validator.NumberValidator();
+
+    stringValidator.isString('hello'); // true
+    numberValidator.isNumber(123); // true
+
+    // test.html
+    // in order, it works even if reference path is commented.
+    <body>
+        <script src="number-validator.js" type="text/javascript"></script>
+        <script src="number-validator.js" type="text/javascript"></script>    
+    </body>
+}
+
+// 7. module understanding
+{
+    
+} 
