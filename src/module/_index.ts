@@ -218,7 +218,104 @@
     </body>
 }
 
-// 7. module understanding
+// 7. module
 {
-    
+    // (1) re-export
+    {
+        // modules.ts
+        export * from './module1';
+        export * from './module2';
+
+        // import-as.ts
+        import * as m from './modules';
+    }
+
+    // (1) namespace re-export
+    {
+        // engine-ts
+        export class Engine {
+            constructor(public name: string) {}
+            getName() {
+                return this.name;
+            }
+        }
+
+        // my-car.ts
+        export class MyCar {
+            constructor(public name: string) {}
+
+            getName() {
+                return this.name;
+            }
+        }
+
+        export { Engine as SuperEngine } from './engine'
+
+        // car-info.module.ts
+        import { MyCar as SuperCar, SuperEngine } from './my-car';
+
+        export namespace CarInfo {
+            export let car = SuperCar;
+            export let engine = SuperEngine;
+            export function Hello() {
+                console.log('hello');
+            }
+        }
+        
+
+        // load-car-info.ts
+        import { CarInfo } from './car-info.module';
+        
+        CarInfo.Hello(); // hello
+
+        let car = new CarInfo.car('My Car');
+        car.name; // My Car
+
+        let engine = new CarInfo.engine('My Engine');
+        engine.name; // My Engine
+    }
 } 
+
+// 8. default module 
+{
+    // (1) import default module, use alias
+    {
+        // default.ts
+        const p = {
+            name: 'happy',
+            age: 30
+        }
+
+        const h: string = 'hello ts!';
+
+        export { p as default, h as hello };
+
+        // load-default.ts
+        import p, { hello } from './default.ts' // import default module, normal module
+    }
+
+    // (2) export module + type
+    {
+        // export.ts
+       interface HelloMessage {
+           first: string; 
+           second: string;
+       }
+
+       function HelloMessage(name: string): HelloMessage {
+           let message: HelloMessage = { first: 'hello', second: name };
+           return message;
+       }
+
+       export default HelloMessage;
+
+       // import.ts
+       import hello from './export';
+
+       let helloMessage: hello = hello('hello');
+       hello('hello'); // { first: 'hello', second: 'hello' }
+       helloMessage; // { first: 'hello', second: 'hello' }
+
+       // compiler understood whether function or type (type inspection)
+    }
+}
