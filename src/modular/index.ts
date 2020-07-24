@@ -319,3 +319,17 @@
        // compiler understood whether function or type (type inspection)
     }
 }
+
+// 9. module system
+{
+    // typescript module format: ES2015(ES6)
+    // compile to the ES5(ES2014) for support many browsers
+    // ES2015 modules can be called by the module loader
+
+    // reference...
+}            
+
+// 10. module format 
+{
+    
+}
